@@ -97,7 +97,7 @@
     lines = lines.querySelectorAll('.line');
     pageTexts = [];
     for (var i = 1; i < lines.length; i++) {
-        var line = lines[i].querySelector('.text');
+        var line = lines[i].querySelector('.text').cloneNode(true);
 
         // 空白文字を持つ要素を除去
         var emptyChars = line.querySelectorAll('span.empty-char-index');
