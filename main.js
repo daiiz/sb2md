@@ -5,6 +5,7 @@
      * - 見出し
      * - 画像
      * - リンク
+     * - 単一行コード
      **/
 
     var writer = (title='Title', texts=[]) => {
@@ -18,10 +19,19 @@
         win.document.open();
         win.document.write(`<title>${title}</title>`);
         win.document.write('<pre>');
-        win.document.write(res);
+        win.document.write(escapeHtml(res));
         win.document.write('</pre>');
         win.document.close();
     }
+
+    var escapeHtml = (str) => {
+        str = str.replace(/&/g, '&amp;');
+        str = str.replace(/</g, '&lt;');
+        str = str.replace(/>/g, '&gt;');
+        str = str.replace(/"/g, '&quot;');
+        str = str.replace(/'/g, '&#39;');
+        return str;
+    };
 
     var markdownIndent = (level=0) => {
         var indent = '';
@@ -89,10 +99,18 @@
     for (var i = 1; i < lines.length; i++) {
         var line = lines[i].querySelector('.text');
 
+        // 空白文字を持つ要素を除去
         var emptyChars = line.querySelectorAll('span.empty-char-index');
         for (var j = 0; j < emptyChars.length; j++) {
             var e = emptyChars[j];
             e.innerText = '';
+        }
+
+        // バッククオートを有効化
+        var backQuos = line.querySelectorAll('span.backquote');
+        for (var j = 0; j < backQuos.length; j++) {
+            var e = backQuos[j];
+            e.innerText = '`';
         }
 
         var html = line.innerHTML.replace(/<span>/g, '');
