@@ -16,12 +16,30 @@
         return indent;
     };
 
+    // level小: 文字小 (Scrapbox記法に準ずる)
+    // 1 <= level <= MAX_LEVEL
+    // (MAX_LEVEL + 1) - level: 「#」の数
+    var headlineMark = (level=1) => {
+        var MAX_LEVEL = 5;
+        var numMarks = (MAX_LEVEL + 1) - level;
+        var r = '';
+        for (var i = 0; i < numMarks; i++) {
+            r += '#';
+        }
+        return r;
+    }
+
     var headline = (text='') => {
         var div = document.createElement("div");
         div.innerHTML = text;
         var strongTags = div.querySelectorAll('strong');
-        console.info(strongTags);
-        return text;
+        for (var i = 0; i < strongTags.length; i++) {
+            var strong = strongTags[i];
+            var level = +(strong.className.split('level-')[1]);
+            var title = strong.innerHTML;
+            strong.innerHTML = `${headlineMark(level)} ${title}`;
+        }
+        return div.innerHTML;
     };
 
     var links = (text='') => {
@@ -31,7 +49,7 @@
         var aTags = div.querySelectorAll('a');
         for (var i = 0; i < aTags.length; i++) {
             var a = aTags[i];
-            var aHtml = a.innerText;
+            var aHtml = a.innerText.trim();
             var aHref = a.href;
             var linkMarkdown = `[${aHtml}](${aHref})`;
 
