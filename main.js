@@ -7,9 +7,25 @@
      * - リンク
      **/
 
+    var writer = (title='Title', texts=[]) => {
+        var res = `# ${title}\n`;
+        for (var i = 0; i < texts.length; i++) {
+            var text = texts[i];
+            res += '\n' + text;
+        }
+
+        var win = window.open();
+        win.document.open();
+        win.document.write(`<title>${title}</title>`);
+        win.document.write('<pre>');
+        win.document.write(res);
+        win.document.write('</pre>');
+        win.document.close();
+    }
+
     var markdownIndent = (level=0) => {
         var indent = '';
-        for (var u = 0; u < level; u++) {
+        for (var u = 1; u < level; u++) {
             // 半角スペース4個ぶん
             indent += '    ';
         }
@@ -69,6 +85,7 @@
     var indentUnitWidthEm = 1.5
 
     lines = lines.querySelectorAll('.line');
+    pageTexts = [];
     for (var i = 1; i < lines.length; i++) {
         var line = lines[i].querySelector('.text');
 
@@ -94,7 +111,12 @@
             var indentLevel = width / indentUnitWidthEm;
             text = markdownIndent(indentLevel) + '- ' + text;
         }
+        if (liDot === null && text.length > 0 && text[0] !== '#') {
+            text += '<br>'
+        }
 
-        if (text.length === 0) text = '<br>';
+        pageTexts.push(text);
     }
+
+    writer(pageTitle, pageTexts);
 })();
