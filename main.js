@@ -58,7 +58,6 @@
             if (img !== null) {
                 linkMarkdown = `[![Image](${img.src})](${aHref})`;
             }
-
             a.innerText = linkMarkdown;
         }
         return div.innerText;
@@ -72,10 +71,17 @@
     lines = lines.querySelectorAll('.line');
     for (var i = 1; i < lines.length; i++) {
         var line = lines[i].querySelector('.text');
+
+        var emptyChars = line.querySelectorAll('span.empty-char-index');
+        for (var j = 0; j < emptyChars.length; j++) {
+            var e = emptyChars[j];
+            e.innerText = '';
+        }
+
         var html = line.innerHTML.replace(/<span>/g, '');
         html = html.replace(/<span.+?>/g, '').replace(/<\/span>/g, '');
         html = html.replace(/<br.+?>/g, '');
-        var text = html.replace(/\n/gi, '').replace(/\t/gi, '');
+        var text = html.replace(/\n/gi, '').replace(/\t/gi, '').trim();
 
         text = headline(text);
         text = links(text);
@@ -89,6 +95,6 @@
             text = markdownIndent(indentLevel) + '- ' + text;
         }
 
-        console.info(text);
+        if (text.length === 0) text = '<br>';
     }
 })();
