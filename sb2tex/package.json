@@ -1,0 +1,11 @@
+{
+  "name": "sb2tex",
+  "version": "1.0.0",
+  "description": "scrapbox2tex",
+  "main": "index.js",
+  "author": "daiiz",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.15.3"
+  }
+}
