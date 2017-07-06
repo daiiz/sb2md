@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const tools = require('./tools');
 const app = express();
 const http = require('http').Server(app);
 const request = require('request');
@@ -13,7 +14,7 @@ var fetchFiles = (urls, callback) => {
     if (callback) callback();
   }else {
     var url = urls.pop();
-    var gyazoId = detectGyazoId(url);
+    var gyazoId = tools.detectGyazoId(url);
     if (gyazoId) {
       var ext = 'png';
       proxy.get(url).on('response', function (res) {
@@ -27,33 +28,6 @@ var fetchFiles = (urls, callback) => {
       fetchFiles(urls, callback);
     }
   }
-};
-
-exports.detectGyazoId = url => {
-  gyazoId = null;
-  if (url.indexOf('gyazo.com/') > 0) {
-    gyazoId = url.split('gyazo.com/')[1];
-    gyazoId = gyazoId.split('/')[0].split('.')[0];
-  }
-  return gyazoId;
-};
-
-exports.willDownloadGyazoUrls = (texCodes=[], existingGyazoIds=[]) => {
-  // TeXコードに含まれるGyazoIDを調べる
-  // ダウンロードすべきコンテンツのURLリストを構成する
-  var gyazoUrls = [];
-  texCodes.forEach(row => {
-    row = row.trim();
-    if (row.startsWith('%%IMAGE;')) {
-      var toks = row.split('\n')[0].split(';');
-      var gyazoId = toks[1].trim();
-      var gyazoUrl = `https://gyazo.com/${gyazoId.trim()}/raw`;
-      if (gyazoUrls.indexOf(gyazoUrl) === -1 && existingGyazoIds.indexOf(gyazoId) === -1) {
-        gyazoUrls.push(gyazoUrl);
-      }
-    }
-  });
-  return gyazoUrls;
 };
 
 app.use(bodyParser.urlencoded({
@@ -89,7 +63,7 @@ app.post('/create/pdf', function (req, res) {
       }
     }
     // 新規にダウンロードすべき画像を決定する
-    var gyazoUrls = willDownloadGyazoUrls(texCodes, existingGyazoIds);
+    var gyazoUrls = tools.willDownloadGyazoUrls(texCodes, existingGyazoIds);
     var shFileName = `create_pdf.sh`;
     if (gyazoUrls.length > 0) {
       shFileName = `create_pdf_full.sh`;
