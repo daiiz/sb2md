@@ -1,3 +1,4 @@
+// yarn run test -- -o --watch
 const test = require('ava')
 const main = require('index')
 
