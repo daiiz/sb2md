@@ -22,14 +22,14 @@ var fetchFiles = (urls, callback) => {
         if (contentType.indexOf('jpg') !== -1 || contentType.indexOf('jpeg') !== -1) ext = 'jpg';
       }).pipe(fs.createWriteStream(`./gyazos/${gyazoId}.${ext}`)).on('close', function () {
         fetchFiles(urls, callback);
-      }); 
+      });
     }else {
       fetchFiles(urls, callback);
     }
   }
 };
 
-var detectGyazoId = url => {
+exports.detectGyazoId = url => {
   gyazoId = null;
   if (url.indexOf('gyazo.com/') > 0) {
     gyazoId = url.split('gyazo.com/')[1];
@@ -38,7 +38,7 @@ var detectGyazoId = url => {
   return gyazoId;
 };
 
-var willDownloadGyazoUrls = (texCodes=[], existingGyazoIds=[]) => {
+exports.willDownloadGyazoUrls = (texCodes=[], existingGyazoIds=[]) => {
   // TeXコードに含まれるGyazoIDを調べる
   // ダウンロードすべきコンテンツのURLリストを構成する
   var gyazoUrls = [];
