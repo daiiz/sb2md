@@ -3,10 +3,10 @@ const bodyParser = require('body-parser');
 const app = express();
 const http = require('http').Server(app);
 const request = require('request');
-const proxy = request.defaults({'proxy': 'http://proxy.uec.ac.jp:8080/'}); //'http://proxy.uec.ac.jp:8080/'});
 const fs = require('fs');
 const spawn = require('child_process').spawn;
 const PORT = process.env.PORT || 8102;
+let proxy;
 
 // 複数のファイルダウンロード
 var fetchFiles = (urls, callback) => {
@@ -14,15 +14,27 @@ var fetchFiles = (urls, callback) => {
     if (callback) callback();
   }else {
     var url = urls.pop();
-    console.log('>', url);
+    var gyazoId = detectGyazoId(url);
+    if (!gyazoId) fetchFiles(urls, callback);
 
+    var ext = 'png';
     proxy.get(url).on('response', function (res) {
+      console.log('>', url);
       var contentType = res.headers['content-type'];
       if (contentType.indexOf('jpg') !== -1 || contentType.indexOf('jpeg') !== -1) ext = 'jpg';
     }).pipe(fs.createWriteStream(`./gyazos/${gyazoId}.${ext}`)).on('close', function () {
       fetchFiles(urls, callback);
     });
   }
+};
+
+var detectGyazoId = url => {
+  gyazoId = null;
+  if (url.indexOf('gyazo.com/') > 0) {
+    gyazoId = url.split('gyazo.com/')[1];
+    gyazoId = gyazoId.split('/')[0].split('.')[0];
+  }
+  return gyazoId;
 };
 
 var willDownloadGyazoUrls = (texCodes=[], existingGyazoIds=[]) => {
@@ -57,6 +69,8 @@ app.get('/', function (req, res) {
 });
 
 app.post('/create/pdf', function (req, res) {
+  proxy = request.defaults({'proxy': req.body.proxy || ''});
+
   // TeXコードを受け取って保存
   var texCodes = req.body.texts;
   fs.writeFileSync(`${__dirname}/raw.tex`, texCodes.join('\n'));
@@ -75,24 +89,21 @@ app.post('/create/pdf', function (req, res) {
     }
     // 新規にダウンロードすべき画像を決定する
     var gyazoUrls = willDownloadGyazoUrls(texCodes, existingGyazoIds);
-    var shFilePath = `${__dirname}/create_pdf.sh`;
+    var shFileName = `create_pdf.sh`;
     if (gyazoUrls.length > 0) {
-      shFilePath = `${__dirname}/create_pdf_full.sh`;
+      shFileName = `create_pdf_full.sh`;
     }
-    console.log('download list', gyazoUrls, shFilePath);
-  });
+    console.log('download list', gyazoUrls);
 
-  // ダウンロード実行
-  // ビルド
-  // var makePdf = spawn('sh', ['make_pdf.sh']);
-  // makePdf.stdout.on('data', (data) => {
-  //   console.log(data.toString());
-  // });
-  // var ext = 'png';
-  // var msg = {
-  //   'gyazo_ids': [gyazoId]
-  // };
-  //
-  // res.send(JSON.stringify(msg));
+    // 画像ダウンロード実行
+    fetchFiles(gyazoUrls, function () {
+      // PDFを作成
+      var createPdf = spawn('sh', [shFileName]);
+      console.log('(standby)', shFileName);
+      createPdf.stdout.on('data', (data) => {
+        console.log(data.toString());
+      });
+    });
+  });
   res.send(JSON.stringify({}));
 });
