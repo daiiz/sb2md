@@ -6,7 +6,7 @@ const request = require('request');
 const fs = require('fs');
 const spawn = require('child_process').spawn;
 const PORT = process.env.PORT || 8102;
-let proxy;
+var proxy;
 
 // 複数のファイルダウンロード
 var fetchFiles = (urls, callback) => {
@@ -104,6 +104,7 @@ app.post('/create/pdf', function (req, res) {
         console.log(data.toString());
       });
     });
+
+    res.json({});
   });
-  res.send(JSON.stringify({}));
 });
