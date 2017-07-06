@@ -5,9 +5,16 @@
   "main": "index.js",
   "author": "daiiz",
   "license": "MIT",
+  "scripts": {
+    "test": "ava"
+  },
   "dependencies": {
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
     "request": "^2.81.0"
+  },
+  "devDependencies": {
+    "ava": "^0.20.0",
+    "standard": "^10.0.2"
   }
 }
