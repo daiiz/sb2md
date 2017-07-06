@@ -8,23 +8,24 @@ const spawn = require('child_process').spawn;
 const PORT = process.env.PORT || 8102;
 var proxy;
 
-// 複数のファイルダウンロード
 var fetchFiles = (urls, callback) => {
   if (urls.length === 0) {
     if (callback) callback();
   }else {
     var url = urls.pop();
     var gyazoId = detectGyazoId(url);
-    if (!gyazoId) fetchFiles(urls, callback);
-
-    var ext = 'png';
-    proxy.get(url).on('response', function (res) {
-      console.log('>', url);
-      var contentType = res.headers['content-type'];
-      if (contentType.indexOf('jpg') !== -1 || contentType.indexOf('jpeg') !== -1) ext = 'jpg';
-    }).pipe(fs.createWriteStream(`./gyazos/${gyazoId}.${ext}`)).on('close', function () {
+    if (gyazoId) {
+      var ext = 'png';
+      proxy.get(url).on('response', function (res) {
+        console.log('>', url);
+        var contentType = res.headers['content-type'];
+        if (contentType.indexOf('jpg') !== -1 || contentType.indexOf('jpeg') !== -1) ext = 'jpg';
+      }).pipe(fs.createWriteStream(`./gyazos/${gyazoId}.${ext}`)).on('close', function () {
+        fetchFiles(urls, callback);
+      }); 
+    }else {
       fetchFiles(urls, callback);
-    });
+    }
   }
 };
 
@@ -39,7 +40,7 @@ var detectGyazoId = url => {
 
 var willDownloadGyazoUrls = (texCodes=[], existingGyazoIds=[]) => {
   // TeXコードに含まれるGyazoIDを調べる
-  // ダウンロード候補のID集合を構成する
+  // ダウンロードすべきコンテンツのURLリストを構成する
   var gyazoUrls = [];
   texCodes.forEach(row => {
     row = row.trim();
